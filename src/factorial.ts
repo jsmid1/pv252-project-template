@@ -1,4 +1,4 @@
-export function factorial(n: number): number {
+export function factorial(n: string): number {
   if (n < 0) {
     throw new Error("Negative numbers not supported");
   }
