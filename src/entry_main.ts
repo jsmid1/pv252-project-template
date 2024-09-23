@@ -6,7 +6,7 @@ import { initFibonacciUi } from "./fibonacci.ts";
 initMenu(document.querySelector(".main-menu")!, "menu-home");
 const site_a: HTMLElement = document.querySelector("#site-a")!;
 const site_b: HTMLElement = document.querySelector("#site-b")!;
-initFactorialUi(site_a );
+initFactorialUi(site_a);
 initFibonacciUi(site_b);
 
 site_a.onclick = () => {
