@@ -172,16 +172,42 @@ PeopleListContextElement.define({
 })
 
 export class PersonElement extends FASTElement {
-  // Some suggestions for properties you might want to use:
+  @PeopleListContext context!: PeopleListContext;
 
-  // @PeopleListContext context!: PeopleListContext;
+  @attr
+  position: number = 0;
 
-  // @attr position: number = 0;
-
-  // @observable person: PersonListItem = new PersonListItem();
+  @observable
+  person: PersonListItem = new PersonListItem();
 }
 
-const personElementTemplate = html<PersonElement>``;
+const personElementTemplate = html<PersonElement>`
+${when(x => x.person.isLoading(), html<PersonElement>`
+  <fluent-skeleton style="height: 66px; padding: 16px; box-sizing: border-box; margin-bottom: 16px;" shape="rect" shimmer="true">Loading...</fluent-skeleton>  
+`)}
+${when(x => x.person.isError(), html<PersonElement>`
+  <fluent-card style="padding: 16px; margin-bottom: 16px; height: 66px;">
+    <span style="display: inline-block; margin: 4px 16px 4px 16px;">${x => x.person.error}</span>
+    <fluent-button appearance="accent" style="float: left;" @click=${(x) => x.context.refresh(x.position)}>Refesh</fluent-button>
+  </fluent-card>
+`)}
+${when(x => x.person.isOk(), html<PersonElement>`
+  <fluent-card style="padding: 16px; margin-bottom: 16px;">
+    <fluent-breadcrumb>
+      <fluent-breadcrumb-item>${(x) => x.person.data?.continentName}</fluent-breadcrumb-item>
+      <fluent-breadcrumb-item>${(x) => x.person.data?.countryName}</fluent-breadcrumb-item>
+      <fluent-breadcrumb-item>${(x) => x.person.data?.birthcity}</fluent-breadcrumb-item>
+    </fluent-breadcrumb>
+    <h2 style="margin-top: 0px;">${(x) => x.person.data?.name}</h2>
+    <fluent-divider role="separator"></fluent-divider>
+    <p>This person was born in ${(x) => x.person.data?.birthyear} and is/was working as ${(x) => x.person.data?.occupation} in the ${(x) => x.person.data?.industry} industry.</p>
+    <fluent-divider role="separator" style="margin-bottom: 16px;"></fluent-divider>
+    <a href="https://maps.google.com/?q=${(x) => x.person.data?.LAT},${(x) => x.person.data?.LON}" target="_blank"><fluent-button appearance="accent">Show on map</fluent-button></a>
+    <fluent-button appearance="outline" @click=${(x) => x.context.refresh(x.position)}>Refresh</fluent-button>
+  </fluent-card>
+`)}
+
+`;
 
 PersonElement.define({
   name: "person-item",
@@ -189,20 +215,33 @@ PersonElement.define({
 })
 
 export class PeopleList extends FASTElement {
-  // Probably will need to access the context state:
-
-  // @PeopleListContext data!: PeopleListContext;
+  @PeopleListContext data!: PeopleListContext;
 
   connectedCallback(): void {
     super.connectedCallback();
 
-    // This may be the place where you want to add child elements
-    // assuming they are not part of the template?
+    console.log(this.data);    
+    const listElement = this;
+    listElement.innerHTML = "";
+    for (const [position, person] of listElement.data.people.entries()) {
+      const item = new PersonElement();
+      item.person = person;
+      item.position = position;
+      listElement.appendChild(item);
+    }
   }
 }
 
 const personListTemplate = html<PeopleList>`
-<div></div>`
+<div>
+${when(x => x.data.isLoading, html<PeopleList>`
+  <fluent-card style="padding: 16px; margin-bottom: 16px;">
+    <span style="display: block; margin-bottom: 8px;">Loaded ${x => x.data.loaded}/${x => x.data.people.length}:</span>
+    <fluent-progress max="${x => x.data.people.length}" value="${x => x.data.loaded}"></fluent-progress>
+  </fluent-card>
+`)}
+<slot></slot>
+</div>`
 
 PeopleList.define({
   name: "people-list",
