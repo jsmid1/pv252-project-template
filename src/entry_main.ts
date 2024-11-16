@@ -38,7 +38,7 @@ class PersonListItem {
 
   constructor(data: Person | null = null, error: string | null = null) {
     this.data = data;
-    this.error = error;    
+    this.error = error;
   }
 
   /**
@@ -116,7 +116,7 @@ export interface PeopleListContext {
   people: PersonListItem[];
 
   // Indicates that at least one person in the list is still loading.
-  isLoading: boolean;  
+  isLoading: boolean;
 
   // The number of loaded elements.
   loaded: number;
@@ -167,7 +167,7 @@ export class PeopleListContextElement extends FASTElement implements PeopleListC
     // list are observable and FAST will update any templates that use them
     // if they change.
     const dummyData = [];
-    for (let i=0; i<ITEM_COUNT; i++) {
+    for (let i = 0; i < ITEM_COUNT; i++) {
       dummyData.push(reactive(new PersonListItem()));
     }
     this.people = dummyData;
@@ -185,14 +185,14 @@ export class PeopleListContextElement extends FASTElement implements PeopleListC
 
     // This code simulates a long-running "loading" procedure that
     // populates the "people" array one by one (possibly with errors).
-    
+
     this.isLoading = true;
     this.loaded = 0;
     const loadOne = () => {
       // Randomly resolve some items as errors and some as "ok".
-      if (Math.random() > ERROR_RATE) {        
+      if (Math.random() > ERROR_RATE) {
         this.people[this.loaded].setOk(this.allPeople[this.loaded]);
-        console.log("Loaded", this.people[this.loaded]);        
+        console.log("Loaded", this.people[this.loaded]);
       } else {
         this.people[this.loaded].setError("Failed to load.");
         console.log("Failed to load.");
@@ -236,13 +236,13 @@ export class PeopleListContextElement extends FASTElement implements PeopleListC
       setTimeout(() => {
         if (Math.random() > ERROR_RATE) {
           this.people[position].setOk(this.allPeople[position]);
-          console.log("Reloaded", this.people[position]);        
+          console.log("Reloaded", this.people[position]);
         } else {
           this.people[position].setError("Failed to load after refresh.");
           console.log("Failed to load.");
         }
       }, LOAD_TIME);
-    }    
+    }
   }
 
 }
@@ -309,15 +309,20 @@ export class PersonElement extends FASTElement {
    * we can use `x.person()`.
    */
   public person(): PersonListItem | null {
-    throw new Error("Not implemented");
-  }
+    if (this.position !== null) {
+      return this.context.people[this.position];
+    }
 
+    return null;
+  }
   /**
    * A helper method, similar to `person`, which will call refresh
    * for the current `position`, assuming one is available.
    */
   public refresh() {
-    throw new Error("Not implemented");
+    if (this.position !== null) {
+      this.context.refresh(this.position);
+    }
   }
 }
 
@@ -326,20 +331,37 @@ export class PersonElement extends FASTElement {
   Note that it could be useful to define templates for the specific types
   of state the PersonElement can have, and then use these templates in the
   "main" element template.
+*/
 
 const loadingState = html<PersonElement>`
-  ... what should be displayed when the item is loading? ...
-`
+  <fluent-skeleton style="height: 66px; padding: 16px; box-sizing: border-box;" shape="rect" shimmer="true">Loading...</fluent-skeleton>
+`;
 
 const errorState = html<PersonElement>`
-  ... what should be displayed when the item has an error? ...
+  <fluent-card style="padding: 16px; margin-bottom: 16px; height: 66px;">
+    <span style="display: inline-block; margin: 4px 16px 4px 16px;">Item failed to load.</span>
+    <fluent-button appearance="accent" style="float: left;" @click="${(x) => x.refresh()}">Refesh</fluent-button>
+  </fluent-card>
 `
 
 const okState = html<PersonElement>`
-  ... what should be displayed when the item has data? ...
+  <fluent-card style="padding: 16px; margin-bottom: 16px;">
+    <fluent-breadcrumb>
+      <fluent-breadcrumb-item>${(x) => x.person()?.data?.continentName}</fluent-breadcrumb-item>
+      <fluent-breadcrumb-item>${(x) => x.person()?.data?.countryName}</fluent-breadcrumb-item>
+      <fluent-breadcrumb-item>${(x) => x.person()?.data?.birthcity}</fluent-breadcrumb-item>
+    </fluent-breadcrumb>
+    <h2 style="margin-top: 0px;">Person Name</h2>
+    <fluent-divider role="separator"></fluent-divider>
+    <p><p>This person was born in ${(x) => x.person()?.data?.birthyear} 
+    and is/was working as ${(x) => x.person()?.data?.occupation} 
+    in the ${(x) => x.person()?.data?.industry} industry.</p></p>
+    <fluent-divider role="separator" style="margin-bottom: 16px;"></fluent-divider>
+    <a href="https://maps.google.com" target="_blank"><fluent-button appearance="accent">Show on map</fluent-button></a>
+    <fluent-button appearance="outline" @click="${(x) => x.refresh()}">Refresh</fluent-button>
+  </fluent-card>
 `
 
-*/
 
 // This is the template for the `PersonElement`. Look at the documentation of
 // FAST templates to learn more about how to show data in HTML templates.
@@ -350,7 +372,9 @@ const okState = html<PersonElement>`
 // as self-contained as possible. Here, you can put such CSS into the CSS
 // template for this element.
 const personElementTemplate = html<PersonElement>`
-   ... render one person list element ...
+  ${when(x => x.person()?.isLoading(), loadingState)}
+  ${when(x => x.person()?.isError(), errorState)}
+  ${when(x => x.person()?.isOk(), okState)}
 `;
 
 // This is the CSS template for the `PersonElement`. You can put in it CSS
@@ -398,21 +422,28 @@ export class PeopleList extends FASTElement {
     // method will not be called again when the item state changes, but
     // at this point, we could for example create the list items that
     // will actually show the person list.
-    for (let i=0; i<this.context.people.length; i++) {
-      console.log("Item loading:", this.context.people[i].isLoading())
-    }
+    this.context.people.forEach((person, index) => {
+      const personElem = document.createElement("person-item") as PersonElement;
+      personElem.position = index;
+      this.appendChild(personElem);
+    })
   }
 }
 
 /*
     Again, it could be useful to define the list header as a separate
     template...
-
+*/
 const headerTemplate = html<PeopleList>`
-  ... the template for the header ...
+  <div class="uk-width-1-1" style="padding: 16px;">
+    <div class="box">
+      <fluent-card style="padding: 16px; margin-bottom: 16px;">
+        <span style="display: block; margin-bottom: 8px;">Loaded ${(x) => x.context.loaded + "/" + x.context.people.length}:</span>
+      <fluent-progress max="${(x) => x.context.people.length}" value="${(x) => x.context.loaded}"></fluent-progress>
+      </fluent-card>
+    </div>
+  </div>
 `;
-
- */
 
 // Similar to before, this is the HTML template where we can specify what
 // the list should actually look like, including the header with the loading
@@ -420,7 +451,10 @@ const headerTemplate = html<PeopleList>`
 // elements now hidden in the shadow DOM, we need some <slot> element where
 // we will actually put the <people-item> elements.
 const personListTemplate = html<PeopleList>`
-  ... render the person list ...
+  ${headerTemplate}
+  <div>
+    <slot></slot>
+  </div>
 `
 
 // Finally, we define the <people-list> element. In this case, we did not
