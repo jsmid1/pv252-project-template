@@ -44,7 +44,7 @@ function onFiles() {
 
 upload.addEventListener("change", onFiles);
 
-// For Webpack to recognize that this is a webworker, we have to use `new URL(...)`
+// For Webpack to recognize that this is a web worker, we have to use `new URL(...)`
 // and can't just use "./worker_example.js" directly.
 const pong_worker = new Worker(new URL("./worker_example.js", import.meta.url));
 pong_worker.onmessage = (e) => {

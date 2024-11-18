@@ -50,7 +50,6 @@ export class HashElement extends FASTElement {
       const fileData = reader.result as string;
 
       // At this point, we know how much data we have.
-      const totalLength = fileData.length;
       this.total = fileData.length;
 
       const hasher = new AsyncSha256();
