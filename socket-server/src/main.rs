@@ -183,7 +183,7 @@ fn main() {
                         // We only react to text messages. The rest should be handled
                         // by the library/protocol itself.
                         if let Message::Text(text) = msg {
-                            eprintln!("[{}] Received message: {}", my_id, text);
+                            //eprintln!("[{}] Received message: {}", my_id, text);
 
                             // Read data.
                             let update = match serde_json::from_str::<Update>(&text) {
@@ -225,7 +225,7 @@ fn main() {
                             };
                             match websocket.send(Message::Text(history_json)) {
                                 Ok(_) => {
-                                    eprintln!("[{}] Sent history: {}", my_id, history.len());
+                                    //eprintln!("[{}] Sent history: {}", my_id, history.len());
                                 }
                                 Err(e) => {
                                     eprintln!("[{}] Cannot send history: {}", my_id, e);

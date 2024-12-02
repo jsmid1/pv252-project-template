@@ -1,4 +1,12 @@
-FROM alpine:3.20.3
+FROM debian:bookworm-slim
 
-COPY target/release/socket-server server
-CMD ["server", "80"]
+WORKDIR "/root"
+
+COPY "target/release/socket-server" "/root/server"
+
+RUN chmod +x "/root/server"
+
+EXPOSE 9000
+
+CMD ["/root/server 9000"]
+ENTRYPOINT ["/bin/sh", "-c"]
