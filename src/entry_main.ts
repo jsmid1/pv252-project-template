@@ -41,6 +41,9 @@ socket.onmessage = (m) => {
 let canvas = new SocketCanvasElement();
 canvas.width = 128;
 canvas.height = 128;
+canvas.ondraw = (x,y) => {
+  console.log(x,y);
+}
 document.querySelector("#container")!.appendChild(canvas);
 
 // We can only draw into canvas once it is actually shown, hence we postpose the draw operation.
