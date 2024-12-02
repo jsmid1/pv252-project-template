@@ -5,22 +5,7 @@
     <script type="module" src="https://unpkg.com/@fluentui/web-components"></script>
     <title><%= htmlWebpackPlugin.options.title %></title>
   </head>
-  <body>
-    <hello-world></hello-world>
-
-    <div class="uk-container uk-margin-top uk-margin-bottom">
-      <h1 style="text-align: center;">Check?</h1>
-      <div id="sha-upload" class="uk-placeholder uk-text-center">
-          <span uk-icon="icon: cloud-upload"></span>
-          <span class="uk-text-middle">Add file(s) by </span>
-          <div uk-form-custom>
-              <input id="sha-upload-input" type="file" multiple>
-              <span class="uk-link">selecting them</span>
-          </div>
-      </div>
-
-      <h2 style="text-align: center;">Sum...</h2>
-      <div id="sha-digests"></div>
-    </div>   
+  <body>    
+    <div id="container" style="margin: 0 auto; text-align: center; margin-top: 64px;"></div>
   </body>
 </html>
