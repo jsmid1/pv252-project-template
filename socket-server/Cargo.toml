@@ -1,0 +1,10 @@
+[package]
+name = "socket-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tungstenite = "0.24.0"
+serde = { version = "1.0.215", features = ["derive"] }
+serde_json = "1.0.133"
+atom_box = "0.2.1"
